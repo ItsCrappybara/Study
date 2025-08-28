@@ -99,6 +99,35 @@
                 </div>
             </div>
         </div>
+
+        <!-- Daily Schedule Modal -->
+        <div id="scheduleModal" class="modal">
+            <div class="modal-content schedule-modal">
+                <div class="modal-header">
+                    <h3 id="scheduleTitle">Daily Schedule</h3>
+                    <button id="closeSchedule" class="close-btn">&times;</button>
+                </div>
+                <div class="schedule-content">
+                    <div class="schedule-header">
+                        <div class="schedule-date-info">
+                            <span id="scheduleDate"></span>
+                            <span id="scheduleDay"></span>
+                        </div>
+                        <button id="addEventToSchedule" class="btn-primary">
+                            <i class="fas fa-plus"></i> Add Event
+                        </button>
+                    </div>
+                    <div class="schedule-events" id="scheduleEvents">
+                        <!-- Events will be populated here -->
+                    </div>
+                    <div class="schedule-empty" id="scheduleEmpty">
+                        <i class="fas fa-calendar-day"></i>
+                        <p>No events scheduled for this day</p>
+                        <button id="addFirstEvent" class="btn-primary">Add Your First Event</button>
+                    </div>
+                </div>
+            </div>
+        </div>
     </div>
 
     <script src="script.js"></script>

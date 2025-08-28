@@ -1,10 +1,12 @@
 class Calendar {
     constructor() {
+        // Initialize with current date
         this.currentDate = new Date();
         this.events = JSON.parse(localStorage.getItem('calendarEvents')) || [];
         this.selectedDate = null;
         this.selectedEvent = null;
         this.editingEvent = null;
+        this.isSubmitting = false; // Add flag to prevent double submission
         
         this.initializeElements();
         this.bindEvents();
@@ -19,13 +21,21 @@ class Calendar {
         this.addEventBtn = document.getElementById('addEventBtn');
         this.eventModal = document.getElementById('eventModal');
         this.eventDetailsModal = document.getElementById('eventDetailsModal');
+        this.scheduleModal = document.getElementById('scheduleModal');
         this.eventForm = document.getElementById('eventForm');
         this.cancelEventBtn = document.getElementById('cancelEvent');
         this.closeDetailsBtn = document.getElementById('closeDetails');
+        this.closeScheduleBtn = document.getElementById('closeSchedule');
         this.editEventBtn = document.getElementById('editEvent');
         this.deleteEventBtn = document.getElementById('deleteEvent');
         this.eventDetailsContent = document.getElementById('eventDetailsContent');
         this.eventDetailsTitle = document.getElementById('eventDetailsTitle');
+        this.scheduleEvents = document.getElementById('scheduleEvents');
+        this.scheduleEmpty = document.getElementById('scheduleEmpty');
+        this.scheduleDate = document.getElementById('scheduleDate');
+        this.scheduleDay = document.getElementById('scheduleDay');
+        this.addEventToScheduleBtn = document.getElementById('addEventToSchedule');
+        this.addFirstEventBtn = document.getElementById('addFirstEvent');
     }
 
     bindEvents() {
@@ -34,8 +44,11 @@ class Calendar {
         this.addEventBtn.addEventListener('click', () => this.openEventModal());
         this.cancelEventBtn.addEventListener('click', () => this.closeEventModal());
         this.closeDetailsBtn.addEventListener('click', () => this.closeEventDetailsModal());
+        this.closeScheduleBtn.addEventListener('click', () => this.closeScheduleModal());
         this.editEventBtn.addEventListener('click', () => this.editSelectedEvent());
         this.deleteEventBtn.addEventListener('click', () => this.deleteSelectedEvent());
+        this.addEventToScheduleBtn.addEventListener('click', () => this.addEventFromSchedule());
+        this.addFirstEventBtn.addEventListener('click', () => this.addEventFromSchedule());
         
         this.eventForm.addEventListener('submit', (e) => this.handleEventSubmit(e));
         
@@ -43,12 +56,13 @@ class Calendar {
         window.addEventListener('click', (e) => {
             if (e.target === this.eventModal) this.closeEventModal();
             if (e.target === this.eventDetailsModal) this.closeEventDetailsModal();
+            if (e.target === this.scheduleModal) this.closeScheduleModal();
         });
 
         // Set default date to today when opening event modal
         this.addEventBtn.addEventListener('click', () => {
-            const today = new Date().toISOString().split('T')[0];
-            document.getElementById('eventDate').value = today;
+            const today = new Date();
+            document.getElementById('eventDate').value = this.getLocalDateString(today);
         });
     }
 
@@ -145,23 +159,46 @@ class Calendar {
 
     isToday(date) {
         const today = new Date();
-        return date.toDateString() === today.toDateString();
+        const isToday = date.toDateString() === today.toDateString();
+        return isToday;
+    }
+
+    getLocalDateString(date) {
+        const year = date.getFullYear();
+        const month = String(date.getMonth() + 1).padStart(2, '0');
+        const day = String(date.getDate()).padStart(2, '0');
+        const dateString = `${year}-${month}-${day}`;
+        return dateString;
     }
 
     getEventsForDate(date) {
-        const dateString = date.toISOString().split('T')[0];
+        const dateString = this.getLocalDateString(date);
         return this.events.filter(event => event.date === dateString);
     }
 
     selectDate(date) {
         this.selectedDate = date;
-        this.openEventModal();
-        document.getElementById('eventDate').value = date.toISOString().split('T')[0];
+        this.openScheduleModal(date);
+    }
+
+    openEventModalWithDate(date) {
+        this.selectedDate = date;
+        this.eventModal.style.display = 'block';
+        document.body.style.overflow = 'hidden';
+        const dateInput = document.getElementById('eventDate');
+        dateInput.value = this.getLocalDateString(date);
     }
 
     openEventModal() {
         this.eventModal.style.display = 'block';
         document.body.style.overflow = 'hidden';
+        
+        // Only set default date to today if no date is selected and no date was passed from schedule
+        const dateInput = document.getElementById('eventDate');
+        if (!dateInput.value && !this.selectedDate) {
+            const today = new Date();
+            dateInput.value = this.getLocalDateString(today);
+        }
     }
 
     closeEventModal() {
@@ -173,6 +210,7 @@ class Calendar {
         const submitBtn = document.querySelector('#eventForm button[type="submit"]');
         submitBtn.textContent = 'Add Event';
         this.editingEvent = null;
+        this.selectedDate = null; // Reset selected date when closing event modal
     }
 
     openEventDetailsModal() {
@@ -186,22 +224,160 @@ class Calendar {
         this.selectedEvent = null;
     }
 
+    openScheduleModal(date) {
+        this.selectedDate = date;
+        this.renderSchedule(date);
+        this.scheduleModal.style.display = 'block';
+        document.body.style.overflow = 'hidden';
+    }
+
+    closeScheduleModal() {
+        this.scheduleModal.style.display = 'none';
+        document.body.style.overflow = 'auto';
+        // Don't reset selectedDate here as it's needed for addEventFromSchedule
+    }
+
+    renderSchedule(date) {
+        const events = this.getEventsForDate(date);
+        const sortedEvents = events.sort((a, b) => a.startTime.localeCompare(b.startTime));
+        
+        // Update date display
+        const dateString = date.toLocaleDateString('en-US', {
+            weekday: 'long',
+            year: 'numeric',
+            month: 'long',
+            day: 'numeric'
+        });
+        
+        this.scheduleDate.textContent = dateString;
+        this.scheduleDay.textContent = date.toLocaleDateString('en-US', { weekday: 'long' });
+        
+        if (sortedEvents.length === 0) {
+            this.scheduleEvents.style.display = 'none';
+            this.scheduleEmpty.style.display = 'flex';
+        } else {
+            this.scheduleEvents.style.display = 'block';
+            this.scheduleEmpty.style.display = 'none';
+            
+            this.scheduleEvents.innerHTML = sortedEvents.map(event => `
+                <div class="schedule-event" data-event-id="${event.id}">
+                    <div class="event-time">
+                        <span class="start-time">${this.formatTime(event.startTime)}</span>
+                        <span class="end-time">${this.formatTime(event.endTime)}</span>
+                    </div>
+                    <div class="event-info">
+                        <div class="event-title" style="color: ${event.color}">${event.title}</div>
+                        ${event.description ? `<div class="event-description">${event.description}</div>` : ''}
+                    </div>
+                    <div class="event-actions">
+                        <button class="edit-event-btn" title="Edit Event">
+                            <i class="fas fa-edit"></i>
+                        </button>
+                        <button class="delete-event-btn" title="Delete Event">
+                            <i class="fas fa-trash"></i>
+                        </button>
+                    </div>
+                </div>
+            `).join('');
+            
+            // Add event listeners to schedule event buttons
+            this.scheduleEvents.querySelectorAll('.edit-event-btn').forEach((btn, index) => {
+                btn.addEventListener('click', () => {
+                    this.editEventFromSchedule(sortedEvents[index]);
+                });
+            });
+            
+            this.scheduleEvents.querySelectorAll('.delete-event-btn').forEach((btn, index) => {
+                btn.addEventListener('click', () => {
+                    this.deleteEventFromSchedule(sortedEvents[index]);
+                });
+            });
+        }
+    }
+
+    addEventFromSchedule() {
+        const selectedDate = this.selectedDate; // Store the date before closing modal
+        this.closeScheduleModal();
+        if (selectedDate) {
+            this.openEventModalWithDate(selectedDate);
+        } else {
+            this.openEventModal();
+        }
+    }
+
+    editEventFromSchedule(event) {
+        this.closeScheduleModal();
+        this.populateEventForm(event);
+        this.openEventModal();
+    }
+
+    deleteEventFromSchedule(event) {
+        if (confirm('Are you sure you want to delete this event?')) {
+            this.events = this.events.filter(e => e.id !== event.id);
+            this.saveEvents();
+            this.renderCalendar();
+            this.renderSchedule(this.selectedDate);
+            this.showNotification('Event deleted successfully!', 'success');
+        }
+    }
+
     handleEventSubmit(e) {
         e.preventDefault();
         
-        const formData = new FormData(this.eventForm);
+        // Prevent double submission
+        if (this.isSubmitting) {
+            return;
+        }
+        this.isSubmitting = true;
+        
+        // Get form values directly from elements BEFORE any potential form reset
+        const title = document.getElementById('eventTitle').value.trim();
+        const date = document.getElementById('eventDate').value;
+        const startTime = document.getElementById('eventStartTime').value;
+        const endTime = document.getElementById('eventEndTime').value;
+        const description = document.getElementById('eventDescription').value.trim();
+        const color = document.getElementById('eventColor').value;
+
         const eventData = {
-            title: formData.get('eventTitle') || document.getElementById('eventTitle').value,
-            date: formData.get('eventDate') || document.getElementById('eventDate').value,
-            startTime: formData.get('eventStartTime') || document.getElementById('eventStartTime').value,
-            endTime: formData.get('eventEndTime') || document.getElementById('eventEndTime').value,
-            description: formData.get('eventDescription') || document.getElementById('eventDescription').value,
-            color: formData.get('eventColor') || document.getElementById('eventColor').value
+            title: title,
+            date: date,
+            startTime: startTime,
+            endTime: endTime,
+            description: description,
+            color: color
         };
 
+        // Validate required fields
+        if (!title) {
+            this.isSubmitting = false;
+            alert('Please enter an event title');
+            document.getElementById('eventTitle').focus();
+            return;
+        }
+        if (!date) {
+            this.isSubmitting = false;
+            alert('Please select a date');
+            document.getElementById('eventDate').focus();
+            return;
+        }
+        if (!startTime) {
+            this.isSubmitting = false;
+            alert('Please select a start time');
+            document.getElementById('eventStartTime').focus();
+            return;
+        }
+        if (!endTime) {
+            this.isSubmitting = false;
+            alert('Please select an end time');
+            document.getElementById('eventEndTime').focus();
+            return;
+        }
+
         // Validate end time is after start time
-        if (eventData.startTime >= eventData.endTime) {
-            alert('End time must be after start time');
+        if (startTime >= endTime) {
+            this.isSubmitting = false;
+            alert(`End time (${endTime}) must be after start time (${startTime})`);
+            document.getElementById('eventEndTime').focus();
             return;
         }
 
@@ -224,6 +400,14 @@ class Calendar {
         this.saveEvents();
         this.renderCalendar();
         this.closeEventModal();
+        
+        // Refresh schedule modal if it's open
+        if (this.scheduleModal.style.display === 'block' && this.selectedDate) {
+            this.renderSchedule(this.selectedDate);
+        }
+        
+        // Reset submission flag
+        this.isSubmitting = false;
     }
 
     showEventDetails(event) {
@@ -350,11 +534,6 @@ class Calendar {
 
 // Initialize calendar when DOM is loaded
 document.addEventListener('DOMContentLoaded', () => {
-    new Calendar();
-});
-
-// Add some sample events for demonstration
-document.addEventListener('DOMContentLoaded', () => {
     const calendar = new Calendar();
     
     // Add sample events if no events exist
@@ -367,7 +546,7 @@ document.addEventListener('DOMContentLoaded', () => {
             {
                 id: '1',
                 title: 'Team Meeting',
-                date: today.toISOString().split('T')[0],
+                date: calendar.getLocalDateString(today),
                 startTime: '10:00',
                 endTime: '11:00',
                 description: 'Weekly team sync meeting',
@@ -376,7 +555,7 @@ document.addEventListener('DOMContentLoaded', () => {
             {
                 id: '2',
                 title: 'Lunch with Client',
-                date: tomorrow.toISOString().split('T')[0],
+                date: calendar.getLocalDateString(tomorrow),
                 startTime: '12:30',
                 endTime: '14:00',
                 description: 'Discuss project requirements',
@@ -385,7 +564,7 @@ document.addEventListener('DOMContentLoaded', () => {
             {
                 id: '3',
                 title: 'Gym Session',
-                date: today.toISOString().split('T')[0],
+                date: calendar.getLocalDateString(today),
                 startTime: '18:00',
                 endTime: '19:30',
                 description: 'Cardio and strength training',
