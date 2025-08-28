@@ -1,131 +1,102 @@
-# Interactive Calendar Application
+# Calendar Application
 
-A beautiful, modern calendar application built with HTML, CSS, and JavaScript that allows you to add, view, and manage events with time details.
+A modern, responsive calendar application with user authentication and event management.
 
 ## Features
 
-### 📅 Calendar View
-- **Monthly Calendar Display**: Clean, responsive grid layout showing the current month
-- **Navigation**: Easy month-to-month navigation with arrow buttons
-- **Today Highlighting**: Current date is highlighted with a special gradient
-- **Event Indicators**: Days with events show colored indicators
-- **Responsive Design**: Works perfectly on desktop, tablet, and mobile devices
+### Authentication
+- **Landing Page**: Single page with login form by default and easy switching to signup
+- **User Registration**: Create new accounts with email and password
+- **User Login**: Secure login with email/password authentication
+- **User Logout**: Secure logout with automatic redirect
+- **Seamless Flow**: Smooth transitions between authentication states
 
-### ✨ Event Management
-- **Add Events**: Click "Add Event" button or click on any day to add a new event
-- **Event Details**: Include title, date, start time, end time, description, and color
-- **Time Validation**: Ensures end time is after start time
-- **Color Coding**: Choose from 6 different colors to organize your events
-- **Event Viewing**: Click on event indicators to view full event details
-- **Event Deletion**: Delete events with confirmation dialog
+### Calendar Features
+- **Monthly View**: Navigate between months with intuitive controls
+- **Event Management**: Add, edit, and delete events
+- **Event Details**: View comprehensive event information
+- **Daily Schedule**: Click on any day to view scheduled events
+- **Color Coding**: Organize events with different colors
+- **Responsive Design**: Works seamlessly on desktop and mobile devices
 
-### 🎨 Modern UI/UX
-- **Beautiful Design**: Modern gradient backgrounds and glass-morphism effects
-- **Smooth Animations**: Hover effects, modal transitions, and interactive feedback
-- **Intuitive Interface**: Easy-to-use forms and clear visual hierarchy
-- **Notifications**: Success messages when adding or deleting events
-- **Accessibility**: Proper focus states and keyboard navigation
+### User Experience
+- **Modern UI**: Clean, modern interface with smooth animations
+- **Real-time Updates**: Events update immediately across all views
+- **Local Storage**: Events are saved locally per user
+- **Notifications**: Success and error notifications for user feedback
 
-### 💾 Data Persistence
-- **Local Storage**: Events are automatically saved to your browser's local storage
-- **No Server Required**: Works completely offline
-- **Data Persistence**: Your events remain even after closing and reopening the browser
+## File Structure
 
-## How to Use
+```
+├── index.html          # Landing page (login/signup)
+├── calendar.html       # Main calendar page
+├── script.js           # Calendar functionality
+├── landing.js          # Landing page authentication
+├── styles.css          # All styling
+└── README.md           # This file
+```
 
-### Getting Started
-1. Open `index.html` in your web browser
-2. The calendar will load with the current month displayed
-3. Sample events are automatically added for demonstration
+## Getting Started
 
-### Adding Events
-1. Click the "Add Event" button in the header, or
-2. Click on any day in the calendar
-3. Fill in the event details:
-   - **Title**: Name of your event
-   - **Date**: Select the event date
-   - **Start Time**: When the event begins
-   - **End Time**: When the event ends
-   - **Description**: Optional details about the event
-   - **Color**: Choose a color to categorize your event
-4. Click "Add Event" to save
+1. **Open the Application**: Start with `index.html`
+2. **Login or Sign Up**: 
+   - Login form is shown by default
+   - Click "Sign up" to switch to registration form
+   - Click "Sign in" to switch back to login
+3. **Access Calendar**: After authentication, you'll be redirected to the calendar
+4. **Add Events**: Click "Add Event" to create your first event
+5. **Navigate**: Use the arrow buttons to move between months
+6. **View Schedule**: Click on any day to see scheduled events
 
-### Managing Events
-- **View Event Details**: Click on any colored event indicator in the calendar
-- **Delete Events**: Open event details and click the "Delete Event" button
-- **Navigate Months**: Use the arrow buttons to move between months
+## Authentication Flow
 
-### Event Display
-- Events appear as colored bars on calendar days
-- Up to 3 events are shown per day
-- If there are more than 3 events, a "+X more" indicator appears
-- Hover over event indicators to see event title and time
+1. **Landing Page**: Users see login form by default
+2. **Switch Mode**: Easy toggle between login and signup forms
+3. **Registration**: New users can create accounts on the same page
+4. **Login**: Existing users authenticate on the same page
+5. **Calendar Access**: Authenticated users access the main calendar
+6. **Logout**: Users can logout and are redirected back to landing page
 
 ## Technical Details
 
-### File Structure
-```
-├── index.html          # Main HTML structure
-├── styles.css          # Modern CSS styling
-├── script.js           # JavaScript functionality
-└── README.md           # This documentation
-```
+### Storage
+- **User Data**: Stored in localStorage as `calendarUsers`
+- **User Sessions**: Current user stored as `currentUser`
+- **Events**: User-specific events stored as `calendarEvents_{userId}`
 
-### Technologies Used
-- **HTML5**: Semantic markup and modern form elements
-- **CSS3**: Flexbox, Grid, animations, and responsive design
-- **JavaScript (ES6+)**: Classes, modules, and modern JavaScript features
-- **Local Storage API**: For data persistence
-- **Font Awesome**: For icons
-- **Google Fonts**: Inter font family
+### Security
+- **Password Validation**: Minimum 6 characters required
+- **Email Validation**: Basic email format validation
+- **User Isolation**: Each user's events are completely separate
 
 ### Browser Compatibility
-- Chrome (recommended)
-- Firefox
-- Safari
-- Edge
-- Mobile browsers
+- Modern browsers with ES6+ support
+- LocalStorage support required
+- Responsive design for all screen sizes
+
+## Usage
+
+### Adding Events
+1. Click "Add Event" button
+2. Fill in event details (title, date, time, description, color)
+3. Click "Add Event" to save
+
+### Editing Events
+1. Click on an event indicator on the calendar
+2. Click "Edit Event" in the details modal
+3. Modify the event information
+4. Click "Update Event" to save changes
+
+### Deleting Events
+1. Click on an event indicator on the calendar
+2. Click "Delete Event" in the details modal
+3. Confirm deletion
+
+### Viewing Daily Schedule
+1. Click on any day in the calendar
+2. View all events scheduled for that day
+3. Add new events directly from the schedule view
 
 ## Customization
 
-### Adding More Colors
-To add more event colors, edit the color options in `index.html`:
-
-```html
-<select id="eventColor">
-    <option value="#3b82f6">Blue</option>
-    <option value="#ef4444">Red</option>
-    <!-- Add more colors here -->
-</select>
-```
-
-### Changing the Theme
-Modify the CSS variables in `styles.css` to customize the color scheme:
-
-```css
-:root {
-    --primary-color: #4f46e5;
-    --success-color: #10b981;
-    --danger-color: #ef4444;
-}
-```
-
-### Adding Features
-The modular JavaScript code makes it easy to add new features:
-- Recurring events
-- Event categories
-- Export/import functionality
-- Calendar sharing
-- Multiple calendar views (week, day)
-
-## License
-
-This project is open source and available under the MIT License.
-
-## Contributing
-
-Feel free to fork this project and submit pull requests for improvements!
-
----
-
-**Enjoy organizing your schedule with this beautiful calendar application!** 📅✨
+The application uses CSS custom properties and can be easily customized by modifying the `styles.css` file. The color scheme and styling can be adjusted to match your preferences.

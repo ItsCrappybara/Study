@@ -2,15 +2,19 @@ class Calendar {
     constructor() {
         // Initialize with current date
         this.currentDate = new Date();
-        this.events = JSON.parse(localStorage.getItem('calendarEvents')) || [];
+        this.events = [];
         this.selectedDate = null;
         this.selectedEvent = null;
         this.editingEvent = null;
         this.isSubmitting = false; // Add flag to prevent double submission
         
+        // Authentication properties
+        this.currentUser = null;
+        this.users = JSON.parse(localStorage.getItem('calendarUsers')) || [];
+        
         this.initializeElements();
         this.bindEvents();
-        this.renderCalendar();
+        this.checkAuthStatus();
     }
 
     initializeElements() {
@@ -36,6 +40,14 @@ class Calendar {
         this.scheduleDay = document.getElementById('scheduleDay');
         this.addEventToScheduleBtn = document.getElementById('addEventToSchedule');
         this.addFirstEventBtn = document.getElementById('addFirstEvent');
+        
+        // Authentication elements
+        this.userMenu = document.getElementById('userMenu');
+        this.authButtons = document.getElementById('authButtons');
+        this.userMenuBtn = document.getElementById('userMenuBtn');
+        this.userDropdown = document.getElementById('userDropdown');
+        this.logoutBtn = document.getElementById('logoutBtn');
+        this.userName = document.getElementById('userName');
     }
 
     bindEvents() {
@@ -52,6 +64,10 @@ class Calendar {
         
         this.eventForm.addEventListener('submit', (e) => this.handleEventSubmit(e));
         
+        // Authentication event bindings
+        this.userMenuBtn.addEventListener('click', () => this.toggleUserDropdown());
+        this.logoutBtn.addEventListener('click', () => this.logout());
+        
         // Close modals when clicking outside
         window.addEventListener('click', (e) => {
             if (e.target === this.eventModal) this.closeEventModal();
@@ -59,11 +75,78 @@ class Calendar {
             if (e.target === this.scheduleModal) this.closeScheduleModal();
         });
 
+        // Close user dropdown when clicking outside
+        document.addEventListener('click', (e) => {
+            if (!this.userMenu.contains(e.target)) {
+                this.userDropdown.classList.remove('show');
+            }
+        });
+
         // Set default date to today when opening event modal
         this.addEventBtn.addEventListener('click', () => {
             const today = new Date();
             document.getElementById('eventDate').value = this.getLocalDateString(today);
         });
+    }
+
+    // Authentication Methods
+    checkAuthStatus() {
+        const currentUser = JSON.parse(localStorage.getItem('currentUser'));
+        if (currentUser) {
+            this.currentUser = currentUser;
+            this.loadUserEvents();
+            this.updateUIForLoggedInUser();
+        } else {
+            // Redirect to landing page if not authenticated
+            window.location.href = 'index.html';
+        }
+    }
+
+    updateUIForLoggedInUser() {
+        this.userMenu.style.display = 'flex';
+        this.authButtons.style.display = 'none';
+        this.userName.textContent = this.currentUser.name;
+        this.addEventBtn.disabled = false;
+        this.renderCalendar();
+    }
+
+    updateUIForLoggedOutUser() {
+        this.userMenu.style.display = 'none';
+        this.authButtons.style.display = 'flex';
+        this.addEventBtn.disabled = true;
+        this.events = [];
+        this.renderCalendar();
+    }
+
+    toggleUserDropdown() {
+        this.userDropdown.classList.toggle('show');
+    }
+
+    logout() {
+        this.currentUser = null;
+        localStorage.removeItem('currentUser');
+        this.events = [];
+        this.updateUIForLoggedOutUser();
+        this.userDropdown.classList.remove('show');
+        this.showNotification('You have been logged out', 'info');
+        
+        // Redirect to landing page after a short delay
+        setTimeout(() => {
+            window.location.href = 'index.html';
+        }, 1000);
+    }
+
+    loadUserEvents() {
+        if (this.currentUser) {
+            const userEvents = JSON.parse(localStorage.getItem(`calendarEvents_${this.currentUser.id}`)) || [];
+            this.events = userEvents;
+        }
+    }
+
+    saveEvents() {
+        if (this.currentUser) {
+            localStorage.setItem(`calendarEvents_${this.currentUser.id}`, JSON.stringify(this.events));
+        }
     }
 
     navigateMonth(direction) {
@@ -489,10 +572,6 @@ class Calendar {
         const ampm = hour >= 12 ? 'PM' : 'AM';
         const displayHour = hour % 12 || 12;
         return `${displayHour}:${minutes} ${ampm}`;
-    }
-
-    saveEvents() {
-        localStorage.setItem('calendarEvents', JSON.stringify(this.events));
     }
 
     showNotification(message, type = 'info') {

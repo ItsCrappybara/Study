@@ -3,133 +3,97 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Calendar</title>
+    <title>Calendar - Welcome</title>
     <link rel="stylesheet" href="styles.css">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
 </head>
 <body>
-    <div class="container">
-        <header class="calendar-header">
-            <h1><i class="fas fa-calendar-alt"></i>Calendar</h1>
-            <div class="header-controls">
-                <button id="prevMonth" class="nav-btn">&lt;</button>
-                <h2 id="currentMonth">January 2024</h2>
-                <button id="nextMonth" class="nav-btn">&gt;</button>
+    <div class="auth-container">
+        <div class="auth-card">
+            <div class="auth-header">
+                <h1><i class="fas fa-calendar-alt"></i> Calendar</h1>
+                <h2 id="authTitle">Welcome Back</h2>
+                <p id="authSubtitle">Sign in to access your calendar</p>
             </div>
-            <button id="addEventBtn" class="add-event-btn">
-                <i class="fas fa-plus"></i> Add Event
-            </button>
-        </header>
-
-        <div class="calendar-container">
-            <div class="weekdays">
-                <div>Sunday</div>
-                <div>Monday</div>
-                <div>Tuesday</div>
-                <div>Wednesday</div>
-                <div>Thursday</div>
-                <div>Friday</div>
-                <div>Saturday</div>
-            </div>
-            <div id="calendar" class="calendar-grid"></div>
-        </div>
-
-        <!-- Event Modal -->
-        <div id="eventModal" class="modal">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h3>Add New Event</h3>
+            
+            <!-- Login Form -->
+            <form id="loginForm" class="auth-form">
+                <div class="form-group">
+                    <label for="loginEmail">Email</label>
+                    <div class="input-group">
+                        <i class="fas fa-envelope"></i>
+                        <input type="email" id="loginEmail" required placeholder="Enter your email">
+                    </div>
                 </div>
-                <form id="eventForm">
-                    <div class="form-group">
-                        <label for="eventTitle">Event Title</label>
-                        <input type="text" id="eventTitle" required>
-                    </div>
-                    <div class="form-group">
-                        <label for="eventDate">Date</label>
-                        <input type="date" id="eventDate" required>
-                    </div>
-                    <div class="form-row">
-                        <div class="form-group">
-                            <label for="eventStartTime">Start Time</label>
-                            <input type="time" id="eventStartTime" required>
-                        </div>
-                        <div class="form-group">
-                            <label for="eventEndTime">End Time</label>
-                            <input type="time" id="eventEndTime" required>
-                        </div>
-                    </div>
-                    <div class="form-group">
-                        <label for="eventDescription">Description (Optional)</label>
-                        <textarea id="eventDescription" rows="3"></textarea>
-                    </div>
-                    <div class="form-group">
-                        <label for="eventColor">Color</label>
-                        <select id="eventColor">
-                            <option value="#3b82f6">Blue</option>
-                            <option value="#ef4444">Red</option>
-                            <option value="#10b981">Green</option>
-                            <option value="#f59e0b">Orange</option>
-                            <option value="#8b5cf6">Purple</option>
-                            <option value="#ec4899">Pink</option>
-                        </select>
-                    </div>
-                    <div class="form-actions">
-                        <button type="button" id="cancelEvent" class="btn-secondary">Cancel</button>
-                        <button type="submit" class="btn-primary">Add Event</button>
-                    </div>
-                </form>
-            </div>
-        </div>
-
-        <!-- Event Details Modal -->
-        <div id="eventDetailsModal" class="modal">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h3 id="eventDetailsTitle">Event Details</h3>
-                </div>
-                <div id="eventDetailsContent">
-                    <!-- Event details will be populated here -->
-                </div>
-                <div class="form-actions">
-                    <button id="editEvent" class="btn-primary">Edit Event</button>
-                    <button id="deleteEvent" class="btn-danger">Delete Event</button>
-                    <button id="closeDetails" class="btn-secondary">Close</button>
-                </div>
-            </div>
-        </div>
-
-        <!-- Daily Schedule Modal -->
-        <div id="scheduleModal" class="modal">
-            <div class="modal-content schedule-modal">
-                <div class="modal-header">
-                    <h3 id="scheduleTitle">Daily Schedule</h3>
-                    <button id="closeSchedule" class="close-btn">&times;</button>
-                </div>
-                <div class="schedule-content">
-                    <div class="schedule-header">
-                        <div class="schedule-date-info">
-                            <span id="scheduleDate"></span>
-                            <span id="scheduleDay"></span>
-                        </div>
-                        <button id="addEventToSchedule" class="btn-primary">
-                            <i class="fas fa-plus"></i> Add Event
+                
+                <div class="form-group">
+                    <label for="loginPassword">Password</label>
+                    <div class="input-group">
+                        <i class="fas fa-lock"></i>
+                        <input type="password" id="loginPassword" required placeholder="Enter your password">
+                        <button type="button" class="toggle-password" id="toggleLoginPassword">
+                            <i class="fas fa-eye"></i>
                         </button>
                     </div>
-                    <div class="schedule-events" id="scheduleEvents">
-                        <!-- Events will be populated here -->
-                    </div>
-                    <div class="schedule-empty" id="scheduleEmpty">
-                        <i class="fas fa-calendar-day"></i>
-                        <p>No events scheduled for this day</p>
-                        <button id="addFirstEvent" class="btn-primary">Add Your First Event</button>
+                </div>
+                
+                <button type="submit" class="auth-submit-btn">
+                    <i class="fas fa-sign-in-alt"></i> Sign In
+                </button>
+            </form>
+            
+            <!-- Signup Form -->
+            <form id="signupForm" class="auth-form" style="display: none;">
+                <div class="form-group">
+                    <label for="signupName">Full Name</label>
+                    <div class="input-group">
+                        <i class="fas fa-user"></i>
+                        <input type="text" id="signupName" required placeholder="Enter your full name">
                     </div>
                 </div>
+                
+                <div class="form-group">
+                    <label for="signupEmail">Email</label>
+                    <div class="input-group">
+                        <i class="fas fa-envelope"></i>
+                        <input type="email" id="signupEmail" required placeholder="Enter your email">
+                    </div>
+                </div>
+                
+                <div class="form-group">
+                    <label for="signupPassword">Password</label>
+                    <div class="input-group">
+                        <i class="fas fa-lock"></i>
+                        <input type="password" id="signupPassword" required placeholder="Create a password">
+                        <button type="button" class="toggle-password" id="toggleSignupPassword">
+                            <i class="fas fa-eye"></i>
+                        </button>
+                    </div>
+                </div>
+                
+                <div class="form-group">
+                    <label for="signupConfirmPassword">Confirm Password</label>
+                    <div class="input-group">
+                        <i class="fas fa-lock"></i>
+                        <input type="password" id="signupConfirmPassword" required placeholder="Confirm your password">
+                        <button type="button" class="toggle-password" id="toggleSignupConfirmPassword">
+                            <i class="fas fa-eye"></i>
+                        </button>
+                    </div>
+                </div>
+                
+                <button type="submit" class="auth-submit-btn">
+                    <i class="fas fa-user-plus"></i> Create Account
+                </button>
+            </form>
+            
+            <div class="auth-footer">
+                <p id="authSwitchText">Don't have an account? <button type="button" id="switchAuthMode" class="auth-link">Sign up</button></p>
             </div>
         </div>
     </div>
 
-    <script src="script.js"></script>
+    <script src="landing.js"></script>
 </body>
 </html>
